@@ -19,7 +19,7 @@ $ mhv --help
 
 A minimalist hex viewer
 
-Usage: hd [OPTIONS] <FILENAME>
+Usage: mhv [OPTIONS] <FILENAME>
 
 Arguments:
   <FILENAME>  Target file

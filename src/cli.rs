@@ -4,7 +4,11 @@ mod view;
 
 use clap::Parser;
 
-use self::{errors::Result, fs::read_data, view::display_data};
+use self::{
+    errors::Result,
+    fs::read_data,
+    view::display_data,
+};
 
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about = None)]
@@ -23,12 +27,9 @@ struct Cli {
 
 pub fn execute() -> Result<()> {
     let cli = Cli::parse();
-    let data = read_data(&cli.filename)?;
-    let length = if let Some(len) = cli.length {
-        len
-    } else {
-        data.len()
-    };
-    display_data(cli.skip, length, &data);
+
+    let data = read_data(cli.skip, cli.length, &cli.filename)?;
+    display_data(cli.skip, &data);
+
     Ok(())
 }

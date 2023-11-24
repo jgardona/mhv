@@ -1,37 +1,54 @@
+use std::io::{Cursor, Write};
+
 use colored::Colorize;
 
 const OFFSET: usize = 16;
 
-pub fn display_data(skip: usize, buffer: &[u8]) {
+pub fn display_data(skip: usize, buffer: &[u8]) -> std::io::Result<()> {
     let mut position = skip;
+    let mut output = Cursor::new(Vec::<u8>::with_capacity(buffer.len()));
     buffer.chunks(OFFSET).for_each(|d| {
-        print!("{}", format!("[0x{:08x}] ", position).bright_black());
+        write!(
+            output,
+            "{}",
+            format!("[0x{:08x}] ", position).bright_black()
+        )
+        .unwrap();
         for b in d {
             match *b {
                 // null byte
-                0x00 | 0xff => print!("{}  ", "•".bright_black()),
+                0x00 | 0xff => write!(output, "{}  ", "•".bright_black()).unwrap(),
                 // ascii printable characters
-                0x21..=0x7e => print!("{} ", format!("{:02x}", b).blue()),
+                0x21..=0x7e => write!(output, "{} ", format!("{:02x}", b).blue()).unwrap(),
                 // ascii white space characters and controls
-                0x01..=0x08 | 0x0e..=0x1f => print!("{} ", format!("{:02x}", b).green()),
-                0x09..=0x0d | 0x20 | 0x7f => print!("{} ", format!("{:02x}", b).green()),
+                0x01..=0x08 | 0x0e..=0x1f => {
+                    write!(output, "{} ", format!("{:02x}", b).green()).unwrap()
+                }
+                0x09..=0x0d | 0x20 | 0x7f => {
+                    write!(output, "{} ", format!("{:02x}", b).green()).unwrap()
+                }
                 // ascii extended codes
-                0x80..=0xfe => print!("{} ", format!("{:02x}", b).bright_red()),
+                0x80..=0xfe => write!(output, "{} ", format!("{:02x}", b).bright_red()).unwrap(),
             }
         }
 
-        print!("| ");
+        write!(output, "| ").unwrap();
 
         for b in d {
             match *b {
-                0x00 | 0xff => print!("{}", "•".bright_black()),
-                0x21..=0x7e => print!("{}", format!("{}", *b as char).blue()),
-                0x09..=0x0d | 0x20 | 0x7f => print!("{}", "_".green()),
-                0x01..=0x08 | 0x0e..=0x1f => print!("{}", "•".green()),
-                0x80..=0xfe => print!("{}", "•".bright_red()),
+                0x00 | 0xff => write!(output, "{}", "•".bright_black()).unwrap(),
+                0x21..=0x7e => write!(output, "{}", format!("{}", *b as char).blue()).unwrap(),
+                0x09..=0x0d | 0x20 | 0x7f => write!(output, "{}", "_".green()).unwrap(),
+                0x01..=0x08 | 0x0e..=0x1f => write!(output, "{}", "•".green()).unwrap(),
+                0x80..=0xfe => write!(output, "{}", "•".bright_red()).unwrap(),
             }
         }
-        println!();
+        writeln!(output).unwrap();
         position += OFFSET;
-    })
+    });
+
+    output.set_position(0);
+    std::io::copy(&mut output, &mut std::io::stdout())?;
+
+    Ok(())
 }

@@ -29,7 +29,7 @@ pub fn execute() -> Result<()> {
     let cli = Cli::parse();
 
     let data = read_data(cli.skip, cli.length, &cli.filename)?;
-    display_data(cli.skip, &data);
+    display_data(cli.skip, &data)?;
 
     Ok(())
 }

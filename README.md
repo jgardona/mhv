@@ -8,11 +8,11 @@
 
 * **The color legend**
   
-  *  <span style="color: gray;">**Null byte**</span>
-  *  <span style="color: lightblue;">**ASCII Printable Characters**</span>
-  *  <span style="color: lightgreen;">**Space Characters**</span>
-  *  <span style="color: lightgreen;">**Control Characters**</span>
-  *  <span style="color: orangered;">**ASCII Extended Codes**</span>
+  *  ⬛ **Null byte**
+  *  🟦 **ASCII Printable Characters**
+  *  🟩 **Space Characters**
+  *  🟩 **Control Characters**
+  *  🟥 **ASCII Extended Codes**
   
 
 

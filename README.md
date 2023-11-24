@@ -1,9 +1,19 @@
 # MHV
-**mhv** is a minimalist hexadecimal viewer.
 
 <div align="center">
 <img src="images/demo.png"/>
 </div>
+
+## **MHV** is a minimalist hexadecimal viewer.
+
+* **The color legend**
+  
+  *  <span style="color: gray;">**Null byte**</span>
+  *  <span style="color: lightblue;">**ASCII Printable Characters**</span>
+  *  <span style="color: lightgreen;">**Space Characters**</span>
+  *  <span style="color: lightgreen;">**Control Characters**</span>
+  *  <span style="color: orangered;">**ASCII Extended Codes**</span>
+  
 
 
 * **Install**

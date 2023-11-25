@@ -208,3 +208,31 @@ fn test_read_500_b_urandom() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn test_file_not_found() -> Result<()> {
+    let expected = "Something wrong happened: No such file or directory (os error 2)\n";
+
+    let mut cmd = assert_cmd::Command::cargo_bin("mhv")?;
+    cmd.arg("tests/data/dat")
+        .assert()
+        .stderr(predicates::str::contains(expected))
+        .failure();
+
+    Ok(())
+}
+
+#[test]
+fn test_buffer_overflow() -> Result<()> {
+    let expected = "Something wrong happened: failed to fill whole buffer\n";
+
+    let mut cmd = assert_cmd::Command::cargo_bin("mhv")?;
+    cmd
+    .arg("-l50")
+    .arg("tests/data/data3")
+        .assert()
+        .stderr(predicates::str::contains(expected))
+        .failure();
+
+    Ok(())
+}

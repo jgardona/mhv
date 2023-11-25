@@ -32,8 +32,6 @@ pub fn display_data(skip: usize, buffer: &[u8]) -> std::io::Result<()> {
             }
         }
 
-        write!(output, "| ").unwrap();
-
         for b in d {
             match *b {
                 0x00 | 0xff => write!(output, "{}", "•".bright_black()).unwrap(),

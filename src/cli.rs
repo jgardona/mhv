@@ -13,19 +13,21 @@ use self::{
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
-    /// Skip `n` bytes
+    /// Skip `n` bytes.
     #[arg(short, long, default_value_t = 0)]
     skip: usize,
 
-    /// Read `n` bytes. None for full read
+    /// Read `n` bytes. None for full read.
     #[arg(short, long)]
     length: Option<usize>,
 
-    ///
-    #[arg(short = 'n', long = "no-squeezing")] 
+    /// Displays all input data. Otherwise any number of output
+    /// lines which would be identical to the last one are replaced
+    /// with a line comprised of a single asterisk.
+    #[arg(short = 'n', long = "no-squeezing", verbatim_doc_comment)] 
     squeeze: bool,
 
-    /// Target file
+    /// Target file.
     filename: String,
 }
 

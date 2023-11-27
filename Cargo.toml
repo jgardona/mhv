@@ -13,12 +13,13 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 clap = { version = "4.4.8", features = ["derive"]}
-colored = "2.0.4"
+owo-colors = "3.5.0"
 
 [dev-dependencies]
 assert_cmd = "2.0.12"
 predicates = "3.0.4"
 anyhow = "1.0.75"
+strip-ansi-escapes = "*"
 
 [profile.release]
 opt-level = "z"

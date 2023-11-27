@@ -13,12 +13,19 @@ use self::{errors::Result, fs::read_data, view::display_data};
 struct Cli {
     /// Skip `N` bytes of the input. The `N` argument can also
     /// include an unit (see `--length` for details).
-    #[arg(value_name = "N", short, long, default_value = "0", verbatim_doc_comment)]
+    #[arg(
+        value_name = "N",
+        short,
+        long,
+        default_value = "0",
+        verbatim_doc_comment
+    )]
     skip: String,
 
     /// Read `N` bytes from the input. None for full read. The `N`
     /// argument can be a unit with a decimal prefix(kb, mb).
     /// Examples: --length 3kb, -l3kb, --length 1mb...
+    /// N unis are kb(1000), K(1024), mb(1000 * 1000) and M(1024 * 1024).
     #[arg(value_name = "N", short, long, verbatim_doc_comment)]
     length: Option<String>,
 
@@ -38,19 +45,27 @@ pub fn execute() -> Result<()> {
     let skip = parse_unit(&cli.skip)?;
 
     let data = read_data(skip, length, &cli.filename)?;
-    display_data(skip, !cli.squeeze, &data)?;
+    display_data(skip, !cli.squeeze, &data, &mut std::io::stdout().lock())?;
 
     Ok(())
 }
 
 fn parse_unit(input: &str) -> std::result::Result<usize, ParseIntError> {
-    if input.ends_with("kb") {
-        let mut value = input[..input.len() - 2].parse::<usize>()?;
+    if let Some(suffix) = input.strip_suffix("kb") {
+        let mut value = suffix.parse::<usize>()?;
         value *= 1000;
         Ok(value)
-    } else if input.ends_with("mb") {
-        let mut value = input[..input.len() - 2].parse::<usize>()?;
-        value *= 1000000;
+    } else if let Some(suffix) = input.strip_suffix("mb") {
+        let mut value = suffix.parse::<usize>()?;
+        value *= 1000 * 1000;
+        Ok(value)
+    } else if let Some(suffix) = input.strip_suffix('K') {
+        let mut value = suffix.parse::<usize>()?;
+        value *= 1024;
+        Ok(value)
+    } else if let Some(suffix) = input.strip_suffix('M') {
+        let mut value = suffix.parse::<usize>()?;
+        value *= 1024 * 1024;
         Ok(value)
     } else {
         input.parse::<usize>()
@@ -59,11 +74,19 @@ fn parse_unit(input: &str) -> std::result::Result<usize, ParseIntError> {
 
 #[cfg(test)]
 mod test_cli {
+    use super::parse_unit;
     use anyhow::{Ok, Result};
 
-    use super::parse_unit;
     #[test]
     fn test_parse_unit() -> Result<()> {
+        let expected = 1024;
+        let result = parse_unit("1K")?;
+        assert_eq!(expected, result);
+
+        let expected = 1024 * 1024;
+        let result = parse_unit("1M")?;
+        assert_eq!(expected, result);
+
         let expected = 3000;
         let result = parse_unit("3kb")?;
         assert_eq!(expected, result);

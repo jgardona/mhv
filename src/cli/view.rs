@@ -28,7 +28,8 @@ pub fn display_data<W: Write>(
             for b in d {
                 match *b {
                     // null byte
-                    0x00 | 0xff => write!(output, "{}  ", "•".bright_black()).unwrap(),
+                    0x00 => write!(output, "{} ", "··".bright_black()).unwrap(),
+                    0xff => write!(output, "{} ", "••".bright_black()).unwrap(),
                     // ascii printable characters
                     0x21..=0x7e => write!(output, "{:02x} ", b.blue()).unwrap(),
                     // ascii white space characters and controls
@@ -41,7 +42,8 @@ pub fn display_data<W: Write>(
 
             for b in d {
                 match *b {
-                    0x00 | 0xff => write!(output, "{}", "•".bright_black()).unwrap(),
+                    0x00 => write!(output, "{}", "·".bright_black()).unwrap(),
+                    0xff => write!(output, "{}", "•".bright_black()).unwrap(),
                     0x21..=0x7e => write!(output, "{}", (*b as char).blue()).unwrap(),
                     0x09..=0x0d | 0x20 | 0x7f => write!(output, "{}", "_".green()).unwrap(),
                     0x01..=0x08 | 0x0e..=0x1f => write!(output, "{}", "•".green()).unwrap(),

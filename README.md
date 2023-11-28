@@ -25,8 +25,7 @@ $ cargo install mhv
 ## Usage
 
 ```
-$ mhv --help
-
+❯ mhv -h
 A minimalist hex viewer
 
 Usage: mhv [OPTIONS] <FILENAME>
@@ -40,6 +39,7 @@ Options:
   -l, --length <N>    Read `N` bytes from the input. None for full read. The `N`
                       argument can be a unit with a decimal prefix(kb, mb).
                       Examples: --length 3kb, -l3kb, --length 1mb...
+                      N unis are kb(1000), K(1024), mb(1000 * 1000) and M(1024 * 1024).
   -n, --no-squeezing  Displays all input data. Otherwise any number of output
                       lines which would be identical to the last one are replaced
                       with a line comprised of a single asterisk.
@@ -62,6 +62,6 @@ Options:
 
 ![](images/skip16andread40.png)
 
-* **Read using units (kb or mb)**
+* **Read using units kb(1000), K(1024), mb(1000 * 1000) or M(1024 * 1024)**
 
 ![](images/read1kb.png)

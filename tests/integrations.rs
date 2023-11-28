@@ -48,7 +48,7 @@ fn test_no_squeeze_skip_4_length_5b() -> Result<()> {
     let result = cmd.output()?.stdout;
     let result = strip_ansi_escapes::strip(&result);
     let result = std::str::from_utf8(&result)?;
-    let expected = "00000004 71 75 69 63 6b quick\n";
+    let expected = "00000004 71 75 69 63 6b                                  quick\n";
     assert_eq!(expected, result);
 
     Ok(())

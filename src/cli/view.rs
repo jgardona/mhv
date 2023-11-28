@@ -28,8 +28,8 @@ pub fn display_data<W: Write>(
             for b in d {
                 match *b {
                     // null byte
-                    0x00 => write!(output, "{} ", "··".bright_black()).unwrap(),
-                    0xff => write!(output, "{} ", "••".bright_black()).unwrap(),
+                    0x00 => write!(output, "{} ", "00".bright_black()).unwrap(),
+                    0xff => write!(output, "{} ", "ff".bright_red()).unwrap(),
                     // ascii printable characters
                     0x21..=0x7e => write!(output, "{:02x} ", b.blue()).unwrap(),
                     // ascii white space characters and controls
@@ -40,14 +40,18 @@ pub fn display_data<W: Write>(
                 }
             }
 
+            if OFFSET - d.len() > 0 {
+                write!(output, "{}", " ".repeat((OFFSET - d.len()) * 3)).unwrap();
+            }
+
             for b in d {
                 match *b {
-                    0x00 => write!(output, "{}", "·".bright_black()).unwrap(),
-                    0xff => write!(output, "{}", "•".bright_black()).unwrap(),
+                    0x00 => write!(output, "{}", "◦".bright_black()).unwrap(),
+                    0xff => write!(output, "{}", "×".bright_red()).unwrap(),
                     0x21..=0x7e => write!(output, "{}", (*b as char).blue()).unwrap(),
                     0x09..=0x0d | 0x20 | 0x7f => write!(output, "{}", "_".green()).unwrap(),
                     0x01..=0x08 | 0x0e..=0x1f => write!(output, "{}", "•".green()).unwrap(),
-                    0x80..=0xfe => write!(output, "{}", "•".bright_red()).unwrap(),
+                    0x80..=0xfe => write!(output, "{}", "×".bright_red()).unwrap(),
                 }
             }
             writeln!(output).unwrap();
@@ -155,7 +159,7 @@ mod test_view {
     fn test_display_data_16_null_bytes() -> Result<()> {
         let input = [0u8; 16];
         let expected =
-            "00000000 ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ················\n";
+            "00000000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦\n";
         let mut output = Cursor::new(Vec::<u8>::new());
 
         display_data(0, false, &input, &mut output)?;
@@ -243,7 +247,7 @@ mod test_view {
         let result = std::str::from_utf8(&plain_result)?;
 
         let expected =
-            "00000000 ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ················\n\
+            "00000000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦\n\
             *\n\
             00000020 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 ••••••••••••••••\n";
 
@@ -266,7 +270,7 @@ mod test_view {
 
         let expected =
             "00000000 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 ••••••••••••••••\n\
-            00000010 ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ················\n\
+            00000010 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦◦\n\
             *\n\
             00000030 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 ••••••••••••••••\n";
 

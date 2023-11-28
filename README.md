@@ -1,5 +1,4 @@
-# MHV
-
+# MHV [![Rust](https://github.com/jgardona/mhv/actions/workflows/rust.yml/badge.svg)](https://github.com/jgardona/mhv/actions/workflows/rust.yml)
 <div align="center">
 <img src="images/demo.png"/>
 </div>

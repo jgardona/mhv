@@ -19,7 +19,7 @@ owo-colors = "3.5.0"
 assert_cmd = "2.0.12"
 predicates = "3.0.4"
 anyhow = "1.0.75"
-strip-ansi-escapes = "*"
+strip-ansi-escapes = "0.2.0"
 
 [profile.release]
 opt-level = "z"

@@ -71,7 +71,7 @@ Options:
 
 ![](images/read1kb.png)
 
-* **Read from offset 0x50 plus 32 bytes**
+* **Read from offset 0x50 plus 16 bytes**
 
 ![](images/off0x50-32bytes.png)
 

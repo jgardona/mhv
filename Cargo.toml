@@ -1,6 +1,6 @@
 [package]
 name = "mhv"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 description = "A minimalist hex viewer"
 authors = ["Julio C. B. Gardona <jcbritobr@gmail.com>"]

@@ -2,11 +2,15 @@ mod errors;
 mod fs;
 mod view;
 
-use std::num::ParseIntError;
-
 use clap::Parser;
 
-use self::{errors::Result, fs::read_data, view::display_data};
+use crate::CliError;
+
+use self::{
+    errors::{Result, ERR_CANT_PARSE_NUMBER, ERR_NOT_AVAILABLE_DATA},
+    fs::read_data,
+    view::display_data,
+};
 
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about = None)]
@@ -45,39 +49,53 @@ pub fn execute() -> Result<()> {
     let length = parse_unit(&cli.length.unwrap_or("0".into()))?;
     let skip = parse_unit(&cli.skip)?;
 
-    let data = read_data(skip, length, &cli.filename)?;
+    let data = read_data(skip, length, &cli.filename)
+        .map_err(|_| CliError(ERR_NOT_AVAILABLE_DATA.into()))?;
     display_data(skip, !cli.squeeze, &data, &mut std::io::stdout().lock())?;
 
     Ok(())
 }
 
-fn parse_unit(input: &str) -> std::result::Result<usize, ParseIntError> {
+fn parse_unit(input: &str) -> std::result::Result<usize, CliError> {
     if let Some(suffix) = input.strip_suffix("kb") {
-        let mut value = suffix.parse::<usize>()?;
+        let mut value = suffix
+            .parse::<usize>()
+            .map_err(|_| CliError(ERR_CANT_PARSE_NUMBER.into()))?;
         value *= 1000;
         Ok(value)
     } else if let Some(suffix) = input.strip_suffix("mb") {
-        let mut value = suffix.parse::<usize>()?;
+        let mut value = suffix
+            .parse::<usize>()
+            .map_err(|_| CliError(ERR_CANT_PARSE_NUMBER.into()))?;
         value *= 1000 * 1000;
         Ok(value)
     } else if let Some(suffix) = input.strip_suffix('K') {
-        let mut value = suffix.parse::<usize>()?;
+        let mut value = suffix
+            .parse::<usize>()
+            .map_err(|_| CliError(ERR_CANT_PARSE_NUMBER.into()))?;
         value *= 1024;
         Ok(value)
     } else if let Some(suffix) = input.strip_suffix('M') {
-        let mut value = suffix.parse::<usize>()?;
+        let mut value = suffix
+            .parse::<usize>()
+            .map_err(|_| CliError(ERR_CANT_PARSE_NUMBER.into()))?;
         value *= 1024 * 1024;
         Ok(value)
     } else if let Some(prefix) = input.strip_prefix("0x") {
-        let value = usize::from_str_radix(prefix, 16)?;
+        let value = usize::from_str_radix(prefix, 16)
+            .map_err(|_| CliError(ERR_CANT_PARSE_NUMBER.into()))?;
         Ok(value)
     } else {
-        input.parse::<usize>()
+        input
+            .parse::<usize>()
+            .map_err(|_| CliError(ERR_CANT_PARSE_NUMBER.into()))
     }
 }
 
 #[cfg(test)]
 mod test_cli {
+    use crate::{cli::errors::ERR_CANT_PARSE_NUMBER, CliError};
+
     use super::parse_unit;
     use anyhow::{Ok, Result};
 
@@ -118,6 +136,30 @@ mod test_cli {
         let expected = 1024;
         let result = parse_unit("0x400")?;
         assert_eq!(expected, result);
+
+        let expected = CliError(ERR_CANT_PARSE_NUMBER.into());
+        let result = parse_unit("fffkb").unwrap_err();
+        assert_eq!(expected.to_string(), result.to_string());
+
+        let expected = CliError(ERR_CANT_PARSE_NUMBER.into());
+        let result = parse_unit("fffmb").unwrap_err();
+        assert_eq!(expected.to_string(), result.to_string());
+
+        let expected = CliError(ERR_CANT_PARSE_NUMBER.into());
+        let result = parse_unit("fffK").unwrap_err();
+        assert_eq!(expected.to_string(), result.to_string());
+
+        let expected = CliError(ERR_CANT_PARSE_NUMBER.into());
+        let result = parse_unit("fffM").unwrap_err();
+        assert_eq!(expected.to_string(), result.to_string());
+
+        let expected = CliError(ERR_CANT_PARSE_NUMBER.into());
+        let result = parse_unit("0xkkk").unwrap_err();
+        assert_eq!(expected.to_string(), result.to_string());
+
+        let expected = CliError(ERR_CANT_PARSE_NUMBER.into());
+        let result = parse_unit("ff").unwrap_err();
+        assert_eq!(expected.to_string(), result.to_string());
 
         Ok(())
     }

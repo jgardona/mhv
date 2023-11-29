@@ -68,7 +68,7 @@ fn test_no_squeeze_parse_1kb_() -> Result<()> {
 
 #[test]
 fn test_file_not_found() -> Result<()> {
-    let expected = "Something wrong happened: No such file or directory (os error 2)\n";
+    let expected = "Something wrong happened: Cant read data. Check if you are trying to read more than is available, or if the file exists\n";
 
     let mut cmd = assert_cmd::Command::cargo_bin("mhv")?;
     cmd.arg("tests/data/dat")
@@ -80,7 +80,7 @@ fn test_file_not_found() -> Result<()> {
 
 #[test]
 fn test_buffer_overflow() -> Result<()> {
-    let expected = "Something wrong happened: failed to fill whole buffer\n";
+    let expected = "Something wrong happened: Cant read data. Check if you are trying to read more than is available, or if the file exists\n";
 
     let mut cmd = assert_cmd::Command::cargo_bin("mhv")?;
     cmd.arg("-l50")

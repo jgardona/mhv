@@ -25,7 +25,8 @@ struct Cli {
     /// Read `N` bytes from the input. None for full read. The `N`
     /// argument can be a unit with a decimal prefix(kb, mb).
     /// Examples: --length 3kb, -l3kb, --length 1mb...
-    /// N unis are kb(1000), K(1024), mb(1000 * 1000) and M(1024 * 1024).
+    /// N unis are kb(1000), K(1024), mb(1000 * 1000) M(1024 * 1024),
+    /// and a prefix 0x for hexadecimal, `0x0a`.
     #[arg(value_name = "N", short, long, verbatim_doc_comment)]
     length: Option<String>,
 
@@ -67,6 +68,9 @@ fn parse_unit(input: &str) -> std::result::Result<usize, ParseIntError> {
         let mut value = suffix.parse::<usize>()?;
         value *= 1024 * 1024;
         Ok(value)
+    } else if let Some(prefix) = input.strip_prefix("0x") {
+        let value = usize::from_str_radix(prefix, 16)?;
+        Ok(value)
     } else {
         input.parse::<usize>()
     }
@@ -105,6 +109,14 @@ mod test_cli {
 
         let expected = 1000000;
         let result = parse_unit("1mb")?;
+        assert_eq!(expected, result);
+
+        let expected = 10;
+        let result = parse_unit("0x0a")?;
+        assert_eq!(expected, result);
+
+        let expected = 1024;
+        let result = parse_unit("0x400")?;
         assert_eq!(expected, result);
 
         Ok(())

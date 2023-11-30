@@ -1,13 +1,23 @@
 # MHV
-[![Crates.io](https://img.shields.io/crates/v/mhv.svg)](https://crates.io/crates/mhv)
-[![Crates.io Downloads](https://img.shields.io/crates/d/mhv)](https://crates.io/crates/mhv)
-![Rust](https://img.shields.io/badge/rust-stable-orange)
-[![License](https://img.shields.io/crates/l/mhv.svg)](https://opensource.org/licenses/MIT)
-[![Rust](https://github.com/jgardona/mhv/actions/workflows/rust.yml/badge.svg)](https://github.com/jgardona/mhv/actions/workflows/rust.yml)
+<p align="center">
+  <a href="https://crates.io/crates/mhv">
+    <img src="https://img.shields.io/crates/v/mhv.svg" alt="Crates.io"/>
+  </a>
+  <a href="https://crates.io/crates/mhv">
+    <img src="https://img.shields.io/crates/d/mhv" alt="Crates.io Downloads"/>
+  </a>
+  <img src="https://img.shields.io/badge/rust-stable-orange" alt="Rust Stable"/>
+  <a href="https://opensource.org/licenses/MIT">
+    <img src="https://img.shields.io/crates/l/mhv.svg" alt="License"/>
+  </a>
+  <a href="https://github.com/jgardona/mhv/actions/workflows/rust.yml">
+    <img src="https://github.com/jgardona/mhv/actions/workflows/rust.yml/badge.svg" alt="GitHub Actions Workflow Status"/>
+  </a>
+</p>
 
-<div align="center">
-<img src="images/logo.png"/>
-</div>
+  <div align="center">
+  <img src="images/logo.png"/>
+  </div>
 
 ## How it works?
 

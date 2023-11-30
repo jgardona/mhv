@@ -1,4 +1,8 @@
 # MHV
+[![Crates.io](https://img.shields.io/crates/v/mhv.svg)](https://crates.io/crates/mhv)
+[![Crates.io Downloads](https://img.shields.io/crates/d/mhv)](https://crates.io/crates/mhv)
+![Rust](https://img.shields.io/badge/rust-stable-orange)
+[![License](https://img.shields.io/crates/l/mhv.svg)](https://opensource.org/licenses/MIT)
 [![Rust](https://github.com/jgardona/mhv/actions/workflows/rust.yml/badge.svg)](https://github.com/jgardona/mhv/actions/workflows/rust.yml)
 
 <div align="center">

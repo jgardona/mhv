@@ -9,7 +9,7 @@
 <img src="images/logo.png"/>
 </div>
 
-## **MHV** is a minimalist hexadecimal viewer.
+## How it works?
 
 * **The color legend**
   

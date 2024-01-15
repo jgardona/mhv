@@ -1,5 +1,5 @@
-use owo_colors::*;
-use std::io::{Cursor, Write};
+use ansistream::*;
+use std::io::Write;
 
 const OFFSET: usize = 16;
 static EMPTY_LINE: &str = "*";
@@ -11,7 +11,7 @@ pub fn display_data<W: Write>(
     writer: &mut W,
 ) -> std::io::Result<()> {
     let mut position = skip;
-    let mut output = Cursor::new(Vec::<u8>::new());
+    let mut output = AnsiEscapeStream::default();
     let mut old_buffer = [0u8; 16];
     let mut is_printing = false;
     let mut first_line = true;
@@ -24,19 +24,33 @@ pub fn display_data<W: Write>(
             &mut is_printing,
             &mut first_line,
         ) {
-            write!(output, "{:08x} ", position.bright_black()).unwrap();
+            output
+                .write_text_fc_fmt(FC_DARK_GRAY, format_args!("{:08x} ", position))
+                .unwrap();
             for b in d {
                 match *b {
                     // null byte
-                    0x00 => write!(output, "{} ", "00".bright_black()).unwrap(),
-                    0xff => write!(output, "{} ", "ff".bright_red()).unwrap(),
+                    0x00 => output
+                        .write_text_fc_fmt(FC_DARK_GRAY, format_args!("00 "))
+                        .unwrap(),
+                    0xff => output
+                        .write_text_fc_fmt(FC_LIGHT_RED, format_args!("FF "))
+                        .unwrap(),
                     // ascii printable characters
-                    0x21..=0x7e => write!(output, "{:02x} ", b.blue()).unwrap(),
+                    0x21..=0x7e => output
+                        .write_text_fc_fmt(FC_BLUE, format_args!("{:02x} ", b))
+                        .unwrap(),
                     // ascii white space characters and controls
-                    0x01..=0x08 | 0x0e..=0x1f => write!(output, "{:02x} ", b.green()).unwrap(),
-                    0x09..=0x0d | 0x20 | 0x7f => write!(output, "{:02x} ", b.green()).unwrap(),
+                    0x01..=0x08 | 0x0e..=0x1f => output
+                        .write_text_fc_fmt(FC_GREEN, format_args!("{:02x} ", b))
+                        .unwrap(),
+                    0x09..=0x0d | 0x20 | 0x7f => output
+                        .write_text_fc_fmt(FC_GREEN, format_args!("{:02x} ", b))
+                        .unwrap(),
                     // ascii extended codes
-                    0x80..=0xfe => write!(output, "{:02x} ", b.bright_red()).unwrap(),
+                    0x80..=0xfe => output
+                        .write_text_fc_fmt(FC_LIGHT_RED, format_args!("{:02x} ", b))
+                        .unwrap(),
                 }
             }
 
@@ -46,12 +60,24 @@ pub fn display_data<W: Write>(
 
             for b in d {
                 match *b {
-                    0x00 => write!(output, "{}", "◦".bright_black()).unwrap(),
-                    0xff => write!(output, "{}", "×".bright_red()).unwrap(),
-                    0x21..=0x7e => write!(output, "{}", (*b as char).blue()).unwrap(),
-                    0x09..=0x0d | 0x20 | 0x7f => write!(output, "{}", "_".green()).unwrap(),
-                    0x01..=0x08 | 0x0e..=0x1f => write!(output, "{}", "•".green()).unwrap(),
-                    0x80..=0xfe => write!(output, "{}", "×".bright_red()).unwrap(),
+                    0x00 => output
+                        .write_text_fc_fmt(FC_DARK_GRAY, format_args!("◦"))
+                        .unwrap(),
+                    0xff => output
+                        .write_text_fc_fmt(FC_LIGHT_RED, format_args!("×"))
+                        .unwrap(),
+                    0x21..=0x7e => output
+                        .write_text_fc_fmt(FC_BLUE, format_args!("{}", *b as char))
+                        .unwrap(),
+                    0x09..=0x0d | 0x20 | 0x7f => output
+                        .write_text_fc_fmt(FC_GREEN, format_args!("_"))
+                        .unwrap(),
+                    0x01..=0x08 | 0x0e..=0x1f => output
+                        .write_text_fc_fmt(FC_GREEN, format_args!("•"))
+                        .unwrap(),
+                    0x80..=0xfe => output
+                        .write_text_fc_fmt(FC_LIGHT_RED, format_args!("×"))
+                        .unwrap(),
                 }
             }
             writeln!(output).unwrap();
@@ -60,15 +86,15 @@ pub fn display_data<W: Write>(
     });
 
     output.set_position(0);
-    std::io::copy(&mut output, writer)?;
+    std::io::copy(&mut *output, writer).unwrap();
 
     Ok(())
 }
 
-fn squeeze<'a, W: Write>(
+fn squeeze<'a>(
     new_buffer: &'a [u8],
     old_buffer: &'a mut [u8],
-    writer: &mut W,
+    writer: &mut AnsiEscapeStream,
     squeezing: bool,
     printed: &mut bool,
     first_line: &mut bool,
@@ -82,7 +108,10 @@ fn squeeze<'a, W: Write>(
             return false;
         }
         if !*printed {
-            writeln!(writer, "{}", EMPTY_LINE.bright_black()).expect("cant write to writer");
+            //writeln!(writer).expect("cant write to writer");
+            writer
+                .write_text_fc_fmt(FC_DARK_GRAY, format_args!("{EMPTY_LINE}\n"))
+                .expect("cant write to writer");
             *printed = true;
         }
 
@@ -102,15 +131,16 @@ mod test_view {
     use std::{io::Cursor, ops::RangeInclusive};
 
     use super::{display_data, squeeze};
+    use ansistream::AnsiEscapeStream;
     use anyhow::{Ok, Result};
 
-    const OFFSET: RangeInclusive<usize> = RangeInclusive::new(0, 17);
-    const FIRST_CHAR: RangeInclusive<usize> = RangeInclusive::new(19, 30);
+    const OFFSET: RangeInclusive<usize> = RangeInclusive::new(0, 18);
+    const FIRST_CHAR: RangeInclusive<usize> = RangeInclusive::new(19, 31);
 
     #[test]
     fn test_squeeze() {
         let new_buffer = vec![0u8; 32];
-        let mut cursor = Cursor::new(Vec::<u8>::new());
+        let mut cursor = AnsiEscapeStream::default();
         let mut old_buffer = [0u8; 16];
         let mut is_print = false;
         let mut first_line = true;
@@ -128,14 +158,14 @@ mod test_view {
                 assert_eq!(d, old_buffer);
             }
         });
-        let striped_buffer = strip_ansi_escapes::strip(cursor.into_inner());
+        let striped_buffer = strip_ansi_escapes::strip(cursor.get_ref().to_vec());
         assert_eq!("*\n", String::from_utf8_lossy(&striped_buffer));
     }
 
     #[test]
     fn test_squeeze_5_bytes() {
         let new_buffer = vec![1, 1, 1, 1, 4, 5];
-        let mut cursor = Cursor::new(Vec::<u8>::new());
+        let mut cursor = AnsiEscapeStream::default();
         let mut old_buffer = [0u8; 16];
         let mut is_print = false;
         let mut first_line = true;
@@ -152,7 +182,7 @@ mod test_view {
                 assert_eq!(d, old_buffer);
             }
         });
-        assert_eq!("", String::from_utf8_lossy(&cursor.into_inner()));
+        assert_eq!("", String::from_utf8_lossy(&cursor.get_ref().to_vec()));
     }
 
     #[test]
@@ -182,8 +212,7 @@ mod test_view {
         let result = output.get_ref();
         let offset_data = &result[OFFSET];
         let expect = [
-            0x1b, 0x5b, 0x39, 0x30, 0x6d, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x1b,
-            0x5b, 0x33, 0x39, 0x6d,
+            27, 91, 57, 48, 109, 48, 48, 48, 48, 48, 48, 48, 48, 32, 27, 91, 51, 57, 109,
         ];
         // prove output offset section data is eight zeros with ansi code bright black color
         assert_eq!(expect, offset_data);
@@ -198,9 +227,7 @@ mod test_view {
         let result = output.get_ref();
         let first_char = &result[FIRST_CHAR];
         // ansi code red 0x05 ascii control
-        let expected = [
-            0x1b, 0x5b, 0x33, 0x32, 0x6d, 0x30, 0x35, 0x1b, 0x5b, 0x33, 0x39, 0x6d,
-        ];
+        let expected = [27, 91, 51, 50, 109, 48, 53, 32, 27, 91, 51, 57, 109];
         assert_eq!(expected, first_char);
         Ok(())
     }
@@ -213,9 +240,7 @@ mod test_view {
         let result = output.get_ref();
         let first_char = &result[FIRST_CHAR];
         // ansi code green 0x05 ascii control
-        let expected = [
-            0x1b, 0x5b, 0x33, 0x32, 0x6d, 0x32, 0x30, 0x1b, 0x5b, 0x33, 0x39, 0x6d,
-        ];
+        let expected = [27, 91, 51, 50, 109, 50, 48, 32, 27, 91, 51, 57, 109];
         assert_eq!(expected, first_char);
         Ok(())
     }
@@ -228,9 +253,7 @@ mod test_view {
         let result = output.get_ref();
         let first_char = &result[FIRST_CHAR];
         // ansi code red 0x05 ascii extended
-        let expected = [
-            0x1b, 0x5b, 0x39, 0x31, 0x6d, 0x38, 0x30, 0x1b, 0x5b, 0x33, 0x39, 0x6d,
-        ];
+        let expected = [27, 91, 57, 49, 109, 56, 48, 32, 27, 91, 51, 57, 109];
         assert_eq!(expected, first_char);
         Ok(())
     }
